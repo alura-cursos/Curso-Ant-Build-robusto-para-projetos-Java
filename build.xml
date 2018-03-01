@@ -1,70 +1,53 @@
-<project name="tarefas" default="empacotar">
+<project name="agenda" default="compilar">
+	<property file="build.properties"/>
+
+	<path id="classpath-compilacao">
+		<fileset dir="WebContent/WEB-INF/lib">
+			<include name="*.jar" />
+		</fileset>
+	</path>
+
+	<path id="classpath-compilacao-teste">
+		<path refid="classpath-compilacao" />
+		<fileset dir="lib-teste">
+			<include name="*.jar" />
+		</fileset>
+		<pathelement path="${build.dir}/${classes.dir}" />
+	</path>
+
+	<path id="classpath-execucao-teste">
+		<path refid="classpath-compilacao-teste" />
+		<pathelement path="${build.dir}/${classes.teste.dir}" />
+	</path>
 
 	<target name="limpar">
-		<delete dir="build" />
-		<delete dir="build/classes-teste" />
+		<delete dir="${build.dir}" />
+		<mkdir dir="${build.dir}" />
+		<mkdir dir="${build.dir}/${classes.dir}" />
+		<mkdir dir="${build.dir}/${classes.teste.dir}" />
 	</target>
 
-	<target name="init" depends="limpar">
-		<mkdir dir="build" />
-		<mkdir dir="build/classes-teste" />
-	</target>
-
-	<target name="compilar" depends="init">
-		<javac srcdir="src" destdir="build">
-			<classpath>
-				<fileset dir="WebContent/WEB-INF/lib">
-					<include name="*.jar" />
-				</fileset>
-
-				<fileset dir="lib-teste">
-					<include name="*.jar" />
-				</fileset>
-			</classpath>
+	<target name="compilar" depends="limpar">
+		<javac destdir="${build.dir}/${classes.dir}" srcdir="src">
+			<classpath refid="classpath-compilacao" />
 		</javac>
-	</target>
-
-	<target name="empacotar" depends="compilar">
-		<jar destfile="build/treinamento.jar" basedir="build" />
 	</target>
 
 	<target name="compilar-teste" depends="compilar">
-		<javac destdir="build/classes-teste" srcdir="src-teste">
-			<classpath>
-				<pathelement path="build/classes" />
-				<fileset dir="WebContent/WEB-INF/lib">
-					<include name="*.jar" />
-				</fileset>
-				<fileset dir="lib-teste">
-					<include name="*.jar" />
-				</fileset>
-				<fileset dir="src">
-					<include name="*.java" />
-				</fileset>
-			</classpath>
+		<javac destdir="${build.dir}/${classes.teste.dir}" srcdir="src-teste">
+			<classpath refid="classpath-compilacao-teste" />
 		</javac>
 	</target>
 
-	<target name="executar-testes" depends="compilar-teste">
-		<junit haltonfailure="yes" showoutput="true" printsummary="on">
-			<batchtest todir="build">
-				<formatter type="xml" />
+	<target name="executar-teste" depends="compilar-teste">
+		<junit showoutput="true" printsummary="on">
+			<batchtest>
+				<formatter type="plain" />
 				<fileset dir="src-teste">
 					<include name="**/*Test.java" />
 				</fileset>
 			</batchtest>
-			<classpath>
-				<pathelement location="build/classes" />
-				<pathelement location="build/classes-teste" />
-
-				<fileset dir="WebContent/WEB-INF/lib">
-					<include name="*.jar" />
-				</fileset>
-
-				<fileset dir="lib-teste">
-					<include name="*.jar" />
-				</fileset>
-			</classpath>
+			<classpath refid="classpath-execucao-teste" />
 		</junit>
 	</target>
 </project>
